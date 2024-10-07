@@ -1,0 +1,36 @@
+---
+title: "Part 1 of Project 3"
+author: "Tenzin Dakar, Nwe Oo Mon, Crystal Quezada"
+date: "2024-10-07"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Project 3 - Part 1
+
+**Members**
+
+- Tenzin Dakar
+- Nwe Oo Mon (Nina)
+- Crystal Quezada
+
+**Description**
+
+- Create a short document with the names of group members. You should briefly describe your collaboration tool(s) you’ll use as a group, including for communication, code sharing, and project documentation. You should have identified your data sources, where the data can be found, and how to load it. And you should have created at least a logical model for your normalized database, and produced an Entity-Relationship (ER) diagram documenting your database design.
+
+**Collaboration Tools**
+
+- Our group will communicate primarily through text messages and Zoom calls. To collaborate on code, we're using a shared GitHub repository where we can store our data and R Markdown files. For tasks that require real-time collaboration, screen sharing via Zoom will be especially useful. Additionally, we are maintaining a shared Word document for other notes and contributions.
+
+**Sources**
+
+- Our dataset is job listings based on software, which can be found on [Kaggle](https://www.kaggle.com/code/kerneler/starter-ds-job-listing-technology-04cdb0b7-0/input), it is also stored in our collaborative [GitHub repository](https://github.com/Nweoomon/Project3_607). 
+
+**Entity Relationship Diagram**
+
+- Our diagram can be found on our shared [GitHub Repository](https://github.com/Nweoomon/Project3_607/blob/main/NOM_Job_listing_ER_Diagram.docx).
+
+
