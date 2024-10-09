@@ -1,36 +1,92 @@
 ---
 title: "Part 1 of Project 3"
-author: "Tenzin Dakar, Nwe Oo Mon, Crystal Quezada"
+subtitle: "Team - Data Domination"
+author: "Nfn Tenzin Dakar, Nwe Oo Mon, Crystal Quezada"
 date: "2024-10-07"
-output: html_document
+output: 
+  html_document:
+    toc: true
+    toc_float: true
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-# Project 3 - Part 1
+# Table of Contents
 
-**Members**
+## Members {.tabset}
 
-- Tenzin Dakar
+- Nfn Tenzin Dakar
 - Nwe Oo Mon (Nina)
 - Crystal Quezada
 
-**Description**
+## Description {.tabset}
 
-- Create a short document with the names of group members. You should briefly describe your collaboration tool(s) you’ll use as a group, including for communication, code sharing, and project documentation. You should have identified your data sources, where the data can be found, and how to load it. And you should have created at least a logical model for your normalized database, and produced an Entity-Relationship (ER) diagram documenting your database design.
+Our group, DATA DOMINATION, will use Zoom and text messages for communication. For code sharing and documentation, we’re using RStudio Cloud with R Markdown published on RPubs. All files, including data and documentation, are stored in a GitHub repo. We've created an entity-relationship diagram (ERD) using Mysql DataBase and identified our data sources, which will be loaded via CSV files from GitHub.
 
-**Collaboration Tools**
+## Collaboration Tools {.tabset}
 
-- Our group will communicate primarily through text messages and Zoom calls. To collaborate on code, we're using a shared GitHub repository where we can store our data and R Markdown files. For tasks that require real-time collaboration, screen sharing via Zoom will be especially useful. Additionally, we are maintaining a shared Word document for other notes and contributions.
+Our team leverages several tools to streamline collaboration and project development:
 
-**Sources**
+•	RStudio Cloud ([rstudio.cloud](https://rstudio.cloud)): This platform facilitates collaborative code development, allowing all team members to view, edit, and share code seamlessly in real-time.
 
-- Our dataset is job listings based on software, which can be found on [Kaggle](https://www.kaggle.com/code/kerneler/starter-ds-job-listing-technology-04cdb0b7-0/input), it is also stored in our collaborative [GitHub repository](https://github.com/Nweoomon/Project3_607). 
+•	R Markdown in RStudio Cloud: We use R Markdown to document our project, and publish the results through RPubs ([rpubs.com](https://rpubs.com)), making our work easily accessible.
 
-**Entity Relationship Diagram**
+•	MySQL : This tool was employed to design the entity-relationship diagram (ERD) for the project.
 
-- Our diagram can be found on our shared [GitHub Repository](https://github.com/Nweoomon/Project3_607/blob/main/NOM_Job_listing_ER_Diagram.docx).
+•	[GitHub Repository](https://github.com/Nweoomon/Project3_607) :
+All source CSV files and R Markdown (RMD) files are stored centrally on GitHub, allowing the team to access and manage files efficiently.
+
+•	Communication: Our discussions and updates happen over Zoom for meetings and text messages for daily communication, ensuring smooth coordination.
+
+## Sources {.tabset}
+Kaggle ML & DS Survey: 
+Our dataset is job listings based on software, which can be found on [Kaggle](https://www.kaggle.com/code/kerneler/starter-ds-job-listing-technology-04cdb0b7-0/input), it is also stored in our collaborative [GitHub repository](https://github.com/Nweoomon/Project3_607/blob/main/ds_job_listing_software.csv). 
+
+The dataset presents job market data related to various programming and data tools, comparing their demand across different job platforms: LinkedIn, Indeed, SimplyHired, Monster, etc. The table shows the number of job postings mentioning each keyword (e.g., Python, R, SQL) on different platforms and provides the percentage of the total postings each keyword represents on those platforms.
+
+## Entity Relationship Diagram {.tabset}
+
+•	Our diagram can be found on our shared [GitHub Repository](https://github.com/Nweoomon/Project3_607/blob/main/Job_listing_ERD.jpg).
+
+![Job_listing_ERD](https://github.com/Nweoomon/Project3_607/raw/main/Job_listing_ERD.jpg)
+In our ER diagram, we created three tables: Keyword, JobSource, and Metrics.
+
+The Keyword table stores the list of programming languages or technologies (e.g., Python, SQL, R), while the JobSource table holds different job platforms (e.g., LinkedIn, Indeed, Monster). The Metrics table acts as an associative entity that breaks down the many-to-many relationship between Keyword and Job Source into two one-to-many relationships.
+
+One-to-many between Keyword and Metrics: 
+
+For instance, "Python" can appear in multiple metrics entries, each representing a different job source (e.g., LinkedIn, Indeed). 
+
+One-to-many between Job Source and Metrics: 
+
+For example, LinkedIn can have metrics for various keywords (e.g., Python, SQL, R). 
+
+Metrics as the Associative Entity 
+
+Metrics has a foreign key to Keyword (keyword_id) and a foreign key to JobSource (source_id). 
+
+• Our sql codes can be found on our shared [GitHub Repository](https://github.com/Nweoomon/Project3_607/blob/main/Job_listing.sql).
+
+## MySQL Data Import {.tabset}
+
+Data from MySQL will be imported to R in following steps:
+
+Install and Load Necessary Packages: First, R packages DBI and RMariaDB are installed and loaded to connect and interact with the MySQL database.
+
+Store the Database Password Securely: To avoid exposing the database password in the code, the Password will be stored in an environment file (.Renviron). 
+
+Connect to the MySQL Database: Using dbConnect(), a connection will established to the MySQL database by providing the necessary credentials (user, password, database name, host, and port).
+
+Load Data from the Database: Once connected, SQL queries will be used to fetch data from specific tables. The result is stored in an R dataframe.
+
+Close the Connection: After loading the data, the database will be disconnected using dbDisconnect() to free up resources.
+
+## Data Clean Up and Transformation {.tabset}
+
+## Data Analysis {.tabset}
+
+## Conclusion {.tabset}
 
 
