@@ -1,0 +1,87 @@
+---
+title: "Part 3 of Project 3"
+author: "Nfn Tenzin Dakar, Nwe Oo Mon, Crystal Quezada"
+date: "2024-10-15"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(knitr)
+library(dplyr)
+```
+
+```{r read and clean csv}
+joblistings <- read.csv("https://raw.githubusercontent.com/Nweoomon/Project3_607/refs/heads/main/ds_joblistings.csv")
+kable(joblistings, format = "markdown", align = 'c')
+
+clean_joblistings <- joblistings %>% 
+  slice(1:(n() - 6))
+```
+
+```{r transform data}
+clean_joblistings_long <- pivot_longer(clean_joblistings, 
+                               cols = c("LinkedIn", "Indeed", "SimplyHired", "Monster"), 
+                               names_to = "Job_Source", 
+                               values_to = "Count")
+```
+
+```{r most jobs}
+job_counts <- clean_joblistings_long %>%
+  mutate(Count = gsub(",", "", Count),
+         Count = as.numeric(Count)) %>%
+  group_by(Job_Source) %>%
+  summarize(Total_Count = sum(Count, na.rm = TRUE), .groups = 'drop')
+```
+
+LinkedIn has the greatest amount of jobs. Followed by Indeed.
+
+```{r most jobs plot}
+ggplot(job_counts, aes(x = reorder(Job_Source, Total_Count), y = Total_Count, fill = Job_Source)) +
+  geom_bar(stat = "identity") +
+  labs(x = "Job Source", y = "Total Job Count", title = "Total Job Counts by Job Source") +
+  theme_minimal() +
+  geom_text(aes(label = Total_Count), vjust = -0.5, size = 3)
+```
+
+
+```{r top skills}
+top_skills <- clean_joblistings_long %>%
+mutate(Count = as.numeric(gsub(",", "", Count))) %>%
+  arrange(desc(Count)) %>%
+  slice_head(n = 10)
+```
+
+The top skills are Python, R, and SQL, which can be seen on LinkedIn the most. Even though it is a top skill, SimplyHired and Monster do not have jobs with these skills based on this data set. 
+
+```{r top skills plot}
+ggplot(top_skills, aes(x = Job_Source, y = Count, fill = Keyword)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  geom_text(aes(label = Count), vjust = -1, size = 2.65, position = position_dodge(0.9), size = 3) +
+  theme_minimal() +
+  labs(title = "Job Listings by Keyword and Job Source",
+       x = "Job Source",
+       y = "Number of Job Listings") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+```{r bottom skills}
+bottom_keywords <- clean_joblistings_long %>%
+  mutate(Count = as.numeric(gsub(",", "", Count))) %>% # Remove commas and convert to numeric
+  group_by(Keyword, Job_Source) %>%
+  summarize(Total_Count = sum(Count), .groups = 'drop') %>% # Sum counts for each keyword by job source
+  arrange(Total_Count) %>% # Arrange in ascending order to get lowest counts
+  slice_head(n = 10)
+```
+
+Of the "worst" skills, or skills with the least amount of job offerings are D3, Caffe, PyTorch, MongoDB, MySQL, Keras, and Cassandra. Between the "worst" performing job sites, SimplyHired does not have any job listings with the skills.
+
+```{r bottom skills plot}
+ggplot(bottom_keywords, aes(x = reorder(Keyword, Total_Count), y = Total_Count, fill = Job_Source)) +
+  geom_bar(stat = "identity", position = "dodge") + # Position bars side by side
+  labs(x = "Keyword", y = "Count", title = "Bottom 10 Keywords by Job Source Count") +
+  theme_minimal() +
+  geom_text(aes(label = Total_Count), vjust = -0.5, position = position_dodge(0.9), size = 3)
+```
+
