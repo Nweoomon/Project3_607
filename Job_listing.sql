@@ -35,20 +35,32 @@ SET
     
 CREATE TABLE Keyword (
     keyword_id INT PRIMARY KEY AUTO_INCREMENT,
-    keyword_name VARCHAR(255) UNIQUE NOT NULL
+    keyword_name VARCHAR(255) UNIQUE NOT NULL,
+    aveg_percentage DECIMAL(5, 2),
+    Glassdoor_percentage DECIMAL(5, 2),
+    percentage_dif DECIMAL(5, 2)
 );
 
-INSERT INTO Keyword (keyword_name)
-SELECT DISTINCT keyword
+INSERT INTO Keyword (keyword_name, aveg_percentage, Glassdoor_percentage, percentage_dif)
+SELECT keyword, `Avg %`, GlassDoor, Difference
+FROM JobsData;
+
+INSERT INTO Keyword (aveg_percentage, Glassdoor_percentage, percentage_dif)
+SELECT `Avg %`, GlassDoor, Difference
 FROM JobsData;
 
 CREATE TABLE JobSource (
     source_id INT PRIMARY KEY AUTO_INCREMENT,
-    source_name VARCHAR(255) UNIQUE NOT NULL
+    source_name VARCHAR(255) UNIQUE NOT NULL,
+    job_postings INT
 );
 
-INSERT INTO JobSource (source_name)
-VALUES ('LinkedIn'), ('Indeed'), ('SimplyHire'), ('Monster');
+INSERT INTO JobSource (source_name, job_postings)
+VALUES 
+    ('LinkedIn', 8610),
+    ('Indeed', 5138),
+    ('SimplyHire', 3829),
+    ('Monster', 3746);
 
 CREATE TABLE Metrics (
     metric_id INT PRIMARY KEY AUTO_INCREMENT,
