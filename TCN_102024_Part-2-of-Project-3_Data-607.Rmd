@@ -1,0 +1,396 @@
+---
+title: "Project 3"
+subtitle: ""
+author: ""
+date: ""
+output: 
+  html_document:
+    toc: true
+    toc_float: true
+---
+<style>
+  .title {
+    display: none;
+  }
+</style>
+
+<div style="border: 2px solid black; padding: 10px; border-radius: 5px; background-color: #4F81BD ; color:white">
+   <p style="text-align: center; font-size: 32px; font-weight: bold;">Project 3</p>
+   <p style="text-align: center; font-size: 24px; font-weight: bold;">Team - Data Domination</p>
+  <p style="text-align: center"><strong>Authors:</strong> Nfn Tenzin Dakar, Nwe Oo Mon, Crystal Quezada</p>
+  <p style="text-align: center"><strong>Date:</strong> 2024-10-20</p>
+</div>
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE);
+```
+
+## <span style="color:blue">Table of Contents</span> {.tabset}
+
+## <span style="color:blue">Members</span> {.tabset}
+
+- Nfn Tenzin Dakar
+- Nwe Oo Mon (Nina)
+- Crystal Quezada
+
+## <span style="color:blue">Description</span> {.tabset}
+
+Our group, DATA DOMINATION, will use Zoom and text messages for communication. All files, including data and documentation, are stored in a GitHub repo. We've created an entity-relationship diagram (ERD) using Mysql DataBase and identified our data sources, which will be loaded via CSV files from GitHub.
+
+## <span style="color:blue">Collaboration Tools</span> {.tabset}
+
+Our team leverages several tools to streamline collaboration and project development:
+
+* R Markdown in RStudio Cloud: We use R Markdown to document our project, and publish the results through RPubs ([rpubs.com](https://rpubs.com)), making our work easily accessible.
+
+* MySQL : This tool was employed to design the entity-relationship diagram (ERD) for the project.
+
+* [GitHub Repository](https://github.com/Nweoomon/Project3_607) :
+All source CSV files and R Markdown (RMD) files are stored centrally on GitHub, allowing the team to access and manage files efficiently.
+
+* Communication: Our discussions and updates happen over Zoom for meetings and text messages for daily communication, ensuring smooth coordination.
+
+## <span style="color:blue">Sources</span> {.tabset}
+Kaggle ML & DS Survey: 
+Our dataset is job listings based on software, which can be found on [Kaggle](https://www.kaggle.com/code/kerneler/starter-ds-job-listing-technology-04cdb0b7-0/input), it is also stored in our collaborative [GitHub repository](https://github.com/Nweoomon/Project3_607/blob/main/ds_job_listing_software.csv). 
+
+The dataset provides insights into the job market for data scientists in 2018, focusing on the demand for various programming languages and data tools across major job platforms, including LinkedIn, Indeed, SimplyHired, and Monster. It details the number of job postings that mention each keyword (e.g., Python, R, SQL) and calculates the percentage of total postings that each keyword represents on these platforms. Additionally, the dataset includes a comparison with 2017 data from Glassdoor.
+
+## <span style="color:blue">Entity Relationship Diagram</span> {.tabset}
+
+* Our diagram can be found on our shared [GitHub Repository](https://github.com/Nweoomon/Project3_607/blob/main/Job_listing_ERD_new.jpg).
+
+![**Figure: Job_listing_ER Diagram**](https://github.com/Nweoomon/Project3_607/raw/main/Job_listing_ERD_new.jpg)
+<style>
+  img {
+    max-width: 90%;
+    height: auto;
+    border: 2px solid black;
+    padding: 5px;
+  }
+</style>
+
+
+* In our ER diagram, we created three tables: Keyword, JobSource, and Metrics.
+
+The Keyword table stores the list of programming languages or technologies (e.g., Python, SQL, R), while the JobSource table holds different job platforms (e.g., LinkedIn, Indeed, Monster). The Metrics table acts as an associative entity that breaks down the many-to-many relationship between Keyword and Job Source into two one-to-many relationships.
+
+* One-to-many between Keyword and Metrics: 
+
+For instance, "Python" can appear in multiple metrics entries, each representing a different job source (e.g., LinkedIn, Indeed). 
+
+* One-to-many between Job Source and Metrics: 
+
+For example, LinkedIn can have metrics for various keywords (e.g., Python, SQL, R). 
+
+* Metrics as the Associative Entity 
+
+Metrics has a foreign key to Keyword (keyword_id) and a foreign key to JobSource (source_id). 
+
+* Our sql codes can be found on our shared [GitHub Repository](https://github.com/Nweoomon/Project3_607/blob/main/Job_listing.sql).
+
+## <span style="color:blue">MySQL Data Import</span> {.tabset}
+
+Data from MySQL will be imported to R in following steps:
+
+* Install and Load Necessary Packages: First, R packages DBI and RMariaDB are installed and loaded to connect and interact with the MySQL database.
+
+```{r installpackage}
+if (!requireNamespace("DBI", quietly = TRUE)) install.packages("DBI")
+if (!requireNamespace("RMariaDB", quietly = TRUE)) install.packages("RMariaDB")
+if (!requireNamespace("tidyverse", quietly = TRUE)) install.packages("tidyverse")
+if (!requireNamespace("knitr", quietly = TRUE)) install.packages("knitr")
+if (!requireNamespace("scales", quietly = TRUE)) install.packages("scales")
+
+library(DBI)
+library(RMariaDB)
+library(tidyverse)
+library(knitr)
+library(scales)
+```
+
+* Store the Database Password Securely: To avoid exposing the database password in the code, the Password was stored in an environment file (.Renviron). 
+
+* Connect to the MySQL Database: Using dbConnect(), a connection will established to the MySQL database by providing the necessary credentials (user, password, database name, host, and port).
+
+* Load Data from the Database: Once connected, SQL queries will be used to fetch data from specific tables. The result is stored in an R dataframe.
+
+* Close the Connection: After loading the data, the database will be disconnected using dbDisconnect() to free up resources.
+
+```{r connect-to-mysql, echo=TRUE, message=FALSE, warning=FALSE}
+
+con <- dbConnect(
+  RMariaDB::MariaDB(),
+  user = 'root',               
+  password = Sys.getenv("MYSQL_PWD"),    
+  dbname = 'job_listing',     
+  host = 'localhost',           
+  port = 3306                   
+)
+
+# Check if the connection is successful
+if (!is.null(con)) {
+  print("Connected successfully!")
+} else {
+  print("Connection failed.")
+}
+
+# Load the data from the MySQL table into an R dataframe
+jobsource <- dbGetQuery(con, "SELECT * FROM jobsource")
+keyword <- dbGetQuery(con, "SELECT * FROM keyword")
+metrics <- dbGetQuery(con, "SELECT * FROM metrics")
+
+# Execute the SQL query and fetch the results into an R data frame
+query <- "SELECT keyword.keyword_name, 
+                jobsource.source_name, 
+                metrics.count, 
+                metrics.percentage
+        FROM metrics
+        JOIN jobsource ON metrics.source_id = jobsource.source_id
+        JOIN keyword ON metrics.keyword_id = keyword.keyword_id;"
+
+# Fetch the data
+metrics_combined <- dbGetQuery(con, query)
+
+# Display the results
+glimpse (metrics_combined)
+
+# Close the database connection
+dbDisconnect(con)
+```
+
+## <span style="color:blue">Data Clean Up, Formatting and Transformation</span> {.tabset}
+
+* Database Design: The SQL database was structured with normalized tables, using appropriate data types—VARCHAR for text fields, INT for numerical fields, and DECIMAL for percentage values. This approach ensured efficient and accurate data storage and retrieval.
+
+* Data Cleaning: Before loading data into SQL, the CSV file underwent thorough pre-processing in Excel. This included removing commas from numeric fields, converting percentage formats to numbers, filling empty cells with -1 to denote missing values, and removing redundant rows like "Total." These steps ensured that the data was clean and aligned with the database requirements.
+
+* Data Loading: The cleaned data was then imported into SQL tables. The NULLIF function was used to handle missing or invalid data, converting any -1 entries to NULL during the import process, which maintained data integrity.
+
+* Normalization and Relationships: The database design incorporated normalization techniques to minimize data redundancy, enhancing data efficiency. Foreign keys were used to establish clear relationships between tables, improving data integration and consistency.
+
+## <span style="color:blue">Data Analysis</span> {.tabset}
+
+#### <span style="text-decoration: underline;">Job Postings Analysis</span>
+
+* The first plot illustrates the total number of job postings across each job source. LinkIn has the most job postings.
+
+```{r jobpostings}
+
+ggplot(jobsource, aes(x = reorder(source_name, job_postings), y = job_postings, fill = source_name)) +
+  geom_bar(stat = "identity") +
+  labs(x = "Job Source", y = "Total Job Postings", title = "Total Job Postings by Job Source") +
+  theme_minimal() +
+  geom_text(aes(label = job_postings), vjust = -0.5, size = 3)
+
+```
+
+#### <span style="text-decoration: underline;">Demands across Job sources</span>
+
+* The heatmap visualizes the demand for tools across different platforms (SimplyHired, Indeed, LinkedIn, and Monster) based on their respective percentages.
+* The heatmap provides a quick overview of how different tools are distributed in terms of demand across multiple platforms,
+
+```{r demands}
+
+# Sort the data by 'percentage' in descending order
+metrics_combined <- metrics_combined %>%
+  arrange(desc(percentage))
+
+# Convert 'keyword_name' to a factor based on the sorted order
+metrics_combined$keyword_name <- factor(metrics_combined$keyword_name, levels = unique(metrics_combined$keyword_name))
+
+# Create the heatmap with the corrected order and color gradient
+ggplot(metrics_combined, aes(x = source_name, y = keyword_name, fill = percentage)) +
+  geom_tile(color = "white") +
+  scale_fill_gradientn(colors = c("green", "blue", "red"), 
+                       values = scales::rescale(c(0, 0.5, 1)),
+                       labels = scales::percent_format(accuracy = 1)) +
+  labs(title = "Demand for Tools Across each Platforms (in %)",
+       x = "Platforms",
+       y = "Tools") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+#### <span style="text-decoration: underline;">Top and Bottom skills</span>
+
+* The top 5 and bottom 5 skills based on their average percentage of appearance across different job sources are presented with a barchart. The average percentage indicates how frequently each skill appears in job postings on platforms like LinkedIn, Indeed, SimplyHired, and Monster. The percentage was calculated for each skill on each platform and then averaged across all platforms.
+* The results highlight a clear preference for fundamental data science tools and programming languages, like Python, R, and SQL, across job postings. In contrast, more niche or emerging tools like Keras, PyTorch, etc are less frequently required.
+
+```{r TopBottom_skills}
+
+# Filter top 5 and bottom 5 skills by average percentage
+top_skills <- keyword %>% 
+  arrange(desc(aveg_percentage)) %>% 
+  head(5)
+
+bottom_skills <- keyword %>% 
+  arrange(aveg_percentage) %>% 
+  head(5)
+
+# Combine top and bottom skills into one data frame
+top_bottom_skills <- rbind(top_skills, bottom_skills)
+
+# Create a new column to indicate the color
+top_bottom_skills$color <- ifelse(top_bottom_skills$aveg_percentage %in% top_skills$aveg_percentage, "Top 5", "Bottom 5")
+
+# Plotting
+ggplot(top_bottom_skills, aes(x = reorder(keyword_name, aveg_percentage), y = aveg_percentage, fill = color)) +
+  geom_bar(stat = "identity") +
+  scale_fill_manual(values = c("Top 5" = "green", "Bottom 5" = "red")) +
+  labs(x = "Skill", y = "Average Percentage across Job Sources", title = "Top 5 and Bottom 5 Skills by Average Percentage", fill = "") + 
+  theme_minimal() +
+ geom_text(aes(label = percent(aveg_percentage, accuracy = 1)), vjust = ifelse(top_bottom_skills$color == "Top 5", -0.5, 1.5), size = 3) +
+  coord_flip()
+```
+
+#### <span style="text-decoration: underline;">Top 5 skills (in counts)</span>
+
+* The faceted bar chart shows the top tools by demand across four job listing platforms: SimplyHired, Indeed, LinkedIn, and Monster.
+* Python, R, and SQL are the dominant tools across platforms, highlighting their importance in the data science job market.
+* The higher demand on LinkedIn suggests it may be a preferred platform for recruiting data science professionals.
+
+```{r Top5_counts}
+
+# Sort the data to get top tools per platform
+top_tools <- metrics_combined %>%
+  group_by(source_name) %>%
+  top_n(5, wt = count) %>%
+  ungroup()
+
+# Create the faceted bar chart
+ggplot(top_tools, aes(x = reorder(keyword_name, -count), y = count, fill = source_name)) +
+  geom_bar(stat = "identity") +
+  facet_wrap(~ source_name, scales = "free") +  # Facet by source_name (platform)
+  coord_flip() +  # Flip coordinates for horizontal bars
+  labs(title = "Top Tools by Platform",
+       x = "Tool",
+       y = "Count") +
+  theme_minimal() +
+  theme(legend.position = "none")  # Remove the legend since we already use facets
+```
+
+#### <span style="text-decoration: underline;">Changes from 2017</span>
+
+* The average percentage of skill mentions in 2018 across job platforms (LinkedIn, Indeed, SimplyHired, Monster) are compared with the 2017 Glassdoor data for the some skills. 
+* The data shows a shift in focus from older, more traditional tools (like Hadoop, SAS, and Matlab) towards newer or more versatile tools (like Python, Spark, and Tableau).
+
+```{r change_2017}
+
+# Filter out rows with NA values in the 'percentage_dif' column
+data_filtered <- keyword %>%
+  filter(!is.na(percentage_dif))
+
+# Display the data frame
+kable(data_filtered, caption = "Filtered Data")
+
+# Plotting
+ggplot(data_filtered, aes(x = reorder(keyword_name, percentage_dif), y = percentage_dif, fill = percentage_dif > 0)) +
+  geom_bar(stat = "identity") +
+  scale_fill_manual(values = c("TRUE" = "green", "FALSE" = "red"), labels = c("Positive Change", "Negative Change")) +
+  labs(x = "Skill", y = "Percentage Difference from 2017 Glassdoor Postings", title = "Percentage Difference (2018 Average vs 2017 Glassdoor)") +
+  theme_minimal() +
+  geom_text(aes(label = scales::percent(percentage_dif, accuracy = 1)), 
+            vjust = 0.5, hjust = ifelse(data_filtered$percentage_dif > 0, -0.1, 1.1), size = 3.0) +
+  coord_flip()
+```
+
+#### <span style="text-decoration: underline;">Correlation Analysis between platforms</span>
+
+* The table presents the correlation matrix among job postings for the four platforms: Indeed, LinkedIn, Monster, and SimplyHired.
+
+* The correlation values are very high, ranging from 0.98 to 0.99, indicating a strong positive correlation between job postings on these platforms.
+
+* This matrix indicates that the job market for data science roles exhibits similar trends across the four job platforms
+
+```{r corr_sources}
+
+metrics_count <- metrics_combined %>%
+  select(-percentage)
+
+# Pivot the data to a wide format based on 'source_name'
+wide_data_count <- metrics_count %>%
+  pivot_wider(names_from = source_name, values_from = count)
+
+# View the reshaped data
+print(wide_data_count)
+
+# Compute the Pearson correlation matrix
+cor_matrix <- cor(wide_data_count [,-1], use = "complete.obs", method = "pearson")
+
+# Print the correlation matrix
+print(cor_matrix)
+```
+
+#### <span style="text-decoration: underline;">Subcategories</span>
+
+* The bar chart shows the total number of job listings across different data science subcategories. 
+* Programming Languages has the highest number of job listings, followed by Big Data Technologies and Data Management & Databases. 
+* In contrast, subcategories like Statistical Analysis & Tools, Cloud & DevOps Tools, and Data Visualization have relatively fewer job listings. 
+* This distribution highlights a stronger demand for programming and big data skills in the job market compared to other specialized tools and technologies.
+
+```{r subcategories}
+
+# Add a new column 'Subcategory' to categorize each skill
+
+metrics_combined$Subcategory <- ifelse(metrics_combined$keyword_name %in% c("Python", "R", "Java", "C++", "C"), "Programming Languages",
+                    ifelse(metrics_combined$keyword_name %in% c("Hadoop", "Spark", "Hive", "Pig", "Hbase"), "Big Data Technologies",
+                    ifelse(metrics_combined$keyword_name %in% c("SQL", "NoSQL", "MySQL", "MongoDB", "Cassandra"), "Data Management & Databases",
+                    ifelse(metrics_combined$keyword_name %in% c("Tableau", "D3", "Matlab"), "Data Visualization",
+                    ifelse(metrics_combined$keyword_name %in% c("TensorFlow", "Keras", "PyTorch", "Scikit-learn", "Pandas", "Numpy"), "Machine Learning & Deep Learning",
+                    ifelse(metrics_combined$keyword_name %in% c("AWS", "Azure", "Docker", "Git"), "Cloud & DevOps Tools",
+                    ifelse(metrics_combined$keyword_name %in% c("SAS", "SPSS"), "Statistical Analysis & Tools",
+                    "Other")))))))
+
+# Summing job listings for each platform across subcategories
+subcat_summary <- metrics_combined %>%
+  group_by(Subcategory) %>%
+  summarise(total_listings = sum(count)) %>%
+  arrange(desc(total_listings))
+
+# Create the bar plot for subcategories and their popularity
+ggplot(subcat_summary, aes(x = reorder(Subcategory, total_listings), y = total_listings, fill = Subcategory)) +
+  geom_bar(stat = "identity") +
+  labs(title = "Popularity of Data Science Subcategories (Total Job Listings)",
+       x = "Subcategory", y = "Total Job Listings") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1), 
+        legend.position = "none") + 
+  coord_flip()
+```
+
+#### <span style="text-decoration: underline;">Data visualization</span>
+
+* The bar plot illustrates the demand for data visualization skills, specifically comparing Tableau and D3 across four job platforms: Indeed, LinkedIn, Monster, and SimplyHire.
+
+* Tableau has a significantly higher demand than D3 across all platforms, with percentages ranging from 14% on LinkedIn to 20% on Indeed, Monster, and SimplyHire.
+
+* D3 remains relatively consistent but lower across platforms, maintaining a demand between 3% to 4%.
+
+* This trend suggests that Tableau continues to be the preferred tool for data visualization roles.
+
+```{r data_visualization}
+
+# Filter the data to include only D3 and Tableau skills
+data_visual_filtered <- metrics_combined %>%
+  filter(keyword_name %in% c("D3", "Tableau"))
+
+ggplot(data_visual_filtered, aes(x = source_name, y = percentage, fill = keyword_name)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  geom_text(aes(label = percent(percentage, accuracy = 1)),  # Convert to percentage format
+            position = position_dodge(width = 0.9),
+            vjust = -0.5, size = 3) +  # Adjust label position and size
+  labs(title = "Demand for Data Visualization Skills Across Platforms",
+       x = "Job source", y = "Percentage", fill = "") +
+  theme_minimal() +
+  ylim(0, 0.25)  # Set the y-axis limit to ensure label visibility
+```
+
+## <span style="color:blue">Conclusion</span> {.tabset}
+
+* The analysis shows that Python, R, and SQL are the most in-demand tools across the four major job platforms (SimplyHired, Indeed, LinkedIn, and Monster). 
+* Python consistently ranks as the top skill, followed closely by R and SQL, indicating strong demand for these core programming languages in data science roles. 
+* The higher counts observed on LinkedIn suggest that it may be a key platform for job seekers in the data science field. 
+* Meanwhile, big data tools like Hadoop and Spark are also popular but have fewer listings compared to general-purpose programming languages.
+* This trend highlights the importance of Python, R, and SQL in the current job market, making them critical skills for aspiring data scientists to master.
+* The job market shows the highest demand for programming languages and big data technologies, while Tableau leads in data visualization skills. I
